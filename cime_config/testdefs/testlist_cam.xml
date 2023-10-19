@@ -722,6 +722,7 @@
       <machine name="cheyenne" compiler="intel" category="prealpha"/>
       <machine name="cheyenne" compiler="intel" category="waccm"/>
       <machine name="cheyenne" compiler="intel" category="tem_diags"/>
+      <machine name="cheyenne" compiler="intel" category="mpas"/>
    </machines>
     <options>
       <option name="comment" >TEM diagnostics and zonal-average output</option>
@@ -1214,6 +1215,7 @@
   <test compset="F2000climo" grid="mpasa120_mpasa120" name="ERS_Ln9_P288x1_Vnuopc" testmods="cam/outfrq9s_mpasa120">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cam"/>
+      <machine name="cheyenne" compiler="intel" category="mpas"/>
     </machines>
     <options>
       <option name="wallclock">00:45:00</option>
@@ -1223,6 +1225,7 @@
   <test compset="F2000climo" grid="mpasa480_mpasa480" name="ERS_Ln9_P36x1_Vnuopc" testmods="cam/outfrq9s_mpasa480">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cam"/>
+      <machine name="cheyenne" compiler="intel" category="mpas"/>
     </machines>
     <options>
       <option name="wallclock">00:45:00</option>
@@ -1232,6 +1235,7 @@
   <test compset="FHS94" grid="mpasa480z32_mpasa480" name="ERC_D_Ln9_Vnuopc" testmods="cam/outfrq3s_usecase">
     <machines>
       <machine name="cheyenne" compiler="intel" category="prealpha"/>
+      <machine name="cheyenne" compiler="intel" category="mpas"/>
     </machines>
     <options>
       <option name="wallclock">00:30:00</option>
@@ -1241,6 +1245,7 @@
   <test compset="FHS94" grid="mpasa480z32_mpasa480" name="ERC_D_Ln9_Vnuopc" testmods="cam/outfrq3s_usecase">
     <machines>
       <machine name="izumi" compiler="nag" category="aux_cam"/>
+      <machine name="izumi" compiler="nag" category="mpas"/>
     </machines>
     <options>
       <option name="wallclock">00:30:00</option>
