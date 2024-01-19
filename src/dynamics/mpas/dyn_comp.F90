@@ -646,7 +646,11 @@ subroutine dyn_final(dyn_in, dyn_out)
    nullify(dyn_in % theta_m)
    nullify(dyn_in % rho_zz)
    nullify(dyn_in % tracers)
-   deallocate(dyn_in % mpas_from_cam_cnst)
+   !SS: This a work around for the deallocation bug
+   !deallocate(dyn_in % mpas_from_cam_cnst)
+   if (associated(dyn_in % mpas_from_cam_cnst)) then
+     nullify(dyn_in % mpas_from_cam_cnst)
+   endif
    nullify(dyn_in % rho_base)
    nullify(dyn_in % theta_base)
    dyn_in % index_qv = 0
@@ -682,7 +686,11 @@ subroutine dyn_final(dyn_in, dyn_out)
    nullify(dyn_out % theta_m)
    nullify(dyn_out % rho_zz)
    nullify(dyn_out % tracers)
-   deallocate(dyn_out % cam_from_mpas_cnst)
+   !SS: This a work around for the deallocation bug
+   !deallocate(dyn_out % cam_from_mpas_cnst)
+   if (associated(dyn_out % cam_from_mpas_cnst)) then
+     nullify(dyn_out % cam_from_mpas_cnst)
+   endif
    dyn_out % index_qv = 0
    nullify(dyn_out % zint)
    nullify(dyn_out % zz)
