@@ -1,3 +1,5 @@
+#define _881FIX_
+#define _945FIX_
 module aerosol_optics_cam
   use shr_kind_mod, only: r8 => shr_kind_r8
   use shr_kind_mod, only: cl => shr_kind_cl
@@ -36,12 +38,21 @@ module aerosol_optics_cam
   public :: aerosol_optics_cam_sw
   public :: aerosol_optics_cam_lw
 
+#ifdef _945FIX_
+  type aero_props_t
+      type(modal_aerosol_properties), pointer :: obj => null()
+  end type aero_props_t
+  type aero_state_t
+      type(modal_aerosol_state), pointer :: obj => null()
+  end type aero_state_t
+#else
   type aero_props_t
      class(aerosol_properties), pointer :: obj => null()
   end type aero_props_t
   type aero_state_t
      class(aerosol_state), pointer :: obj => null()
   end type aero_state_t
+#endif
 
   type(aero_props_t), allocatable :: aero_props(:) ! array of aerosol properties objects to allow for
                                                    ! multiple aerosol representations in the same sim
@@ -852,33 +863,63 @@ contains
             case('dust')
                dustvol(icol) = vol(icol)
                burdendust(icol) = burdendust(icol) + specmmr(icol,ilev)*mass(icol,ilev)
+#ifdef _881FIX_
+               scatdust(icol) = vol(icol) * DBLE(specrefindex(iwav))
+               absdust(icol)  =-vol(icol) * DIMAG(specrefindex(iwav))
+#else
                scatdust(icol) = vol(icol) * specrefindex(iwav)%re
                absdust(icol)  =-vol(icol) * specrefindex(iwav)%im
+#endif
                hygrodust(icol)= vol(icol)*hygro_aer
             case('black-c')
                burdenbc(icol) = burdenbc(icol) + specmmr(icol,ilev)*mass(icol,ilev)
+#ifdef _881FIX_
+               scatbc(icol) = vol(icol) * DBLE(specrefindex(iwav))
+               absbc(icol)  =-vol(icol) * DIMAG(specrefindex(iwav))
+#else
                scatbc(icol) = vol(icol) * specrefindex(iwav)%re
                absbc(icol)  =-vol(icol) * specrefindex(iwav)%im
+#endif
                hygrobc(icol)= vol(icol)*hygro_aer
             case('sulfate')
                burdenso4(icol) = burdenso4(icol) + specmmr(icol,ilev)*mass(icol,ilev)
+#ifdef _881FIX_
+               scatsulf(icol) = vol(icol) * DBLE(specrefindex(iwav))
+               abssulf(icol)  =-vol(icol) * DIMAG(specrefindex(iwav))
+#else
                scatsulf(icol) = vol(icol) * specrefindex(iwav)%re
                abssulf(icol)  =-vol(icol) * specrefindex(iwav)%im
+#endif
                hygrosulf(icol)= vol(icol)*hygro_aer
             case('p-organic')
                burdenpom(icol) = burdenpom(icol) + specmmr(icol,ilev)*mass(icol,ilev)
+#ifdef _881FIX_
+               scatpom(icol) = vol(icol) * DBLE(specrefindex(iwav))
+               abspom(icol)  =-vol(icol) * DIMAG(specrefindex(iwav))
+#else
                scatpom(icol) = vol(icol) * specrefindex(iwav)%re
                abspom(icol)  =-vol(icol) * specrefindex(iwav)%im
+#endif
                hygropom(icol)= vol(icol)*hygro_aer
             case('s-organic')
                burdensoa(icol) = burdensoa(icol) + specmmr(icol,ilev)*mass(icol,ilev)
+#ifdef _881FIX_
+               scatsoa(icol) = vol(icol) * DBLE(specrefindex(iwav))
+               abssoa(icol)  =-vol(icol) * DIMAG(specrefindex(iwav))
+#else
                scatsoa(icol) = vol(icol) * specrefindex(iwav)%re
                abssoa(icol) = -vol(icol) * specrefindex(iwav)%im
+#endif
                hygrosoa(icol)= vol(icol)*hygro_aer
             case('seasalt')
                burdenseasalt(icol) = burdenseasalt(icol) + specmmr(icol,ilev)*mass(icol,ilev)
+#ifdef _881FIX_
+               scatsslt(icol) = vol(icol) * DBLE(specrefindex(iwav))
+               abssslt(icol)  =-vol(icol) * DIMAG(specrefindex(iwav))
+#else
                scatsslt(icol) = vol(icol) * specrefindex(iwav)%re
                abssslt(icol) = -vol(icol) * specrefindex(iwav)%im
+#endif
                hygrosslt(icol)= vol(icol)*hygro_aer
             end select
          end do
@@ -890,8 +931,13 @@ contains
             ! partition optical depth into contributions from each constituent
             ! assume contribution is proportional to refractive index X volume
 
+#ifdef _881FIX_
+            scath2o = watervol(icol,ilev)*DBLE(crefwsw(iwav))
+            absh2o = -watervol(icol,ilev)*DIMAG(crefwsw(iwav))
+#else
             scath2o = watervol(icol,ilev)*crefwsw(iwav)%re
             absh2o = -watervol(icol,ilev)*crefwsw(iwav)%im
+#endif
             sumscat = scatsulf(icol) + scatpom(icol) + scatsoa(icol) + scatbc(icol) + &
                  scatdust(icol) + scatsslt(icol) + scath2o
             sumabs  = abssulf(icol) + abspom(icol) + abssoa(icol) + absbc(icol) + &
