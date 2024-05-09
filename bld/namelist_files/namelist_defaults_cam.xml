@@ -48,6 +48,7 @@
 <ncdata hgrid="mpasa480" nlev="32" analytic_ic="1" phys="cam_dev" >atm/cam/inic/mpas/mpasa480_L32_notopo_coords_c240508.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" analytic_ic="1" >atm/cam/inic/mpas/mpasa120_L32_notopo_coords_c201216.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" analytic_ic="1" phys="cam_dev" >atm/cam/inic/mpas/mpasa120_L32_notopo_coords_c240507.nc</ncdata>
+<!-- Next entry with aquaplanet is EarthWorks specific -->
 <ncdata hgrid="mpasa120" nlev="32" analytic_ic="1" aquaplanet="1">atm/cam/inic/mpas/mpasa120_L32_notopo_coords_c201216.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" analytic_ic="1" phys="cam6" >atm/cam/inic/mpas/mpasa120_L32_topo_coords_c201022.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" analytic_ic="1" phys="cam_dev" >atm/cam/inic/mpas/mpasa120_L32_topo_coords_c201022.nc</ncdata>
@@ -55,7 +56,10 @@
 <ncdata hgrid="mpasa60"  nlev="32" analytic_ic="1" phys="cam_dev" >atm/cam/inic/mpas/mpasa60_L32_notopo_coords_c240507.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="32" analytic_ic="1" >atm/cam/inic/mpas/mpasa30_L32_notopo_coords_c230707.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="32" analytic_ic="1" phys="cam_dev" >atm/cam/inic/mpas/mpasa30_L32_notopo_coords_c240507.nc</ncdata>
-<ncdata hgrid="mpasa15"  nlev="32" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L32_notopo_coords_c230928.nc</ncdata>
+<!-- Next 3 entries are EarthWorks specific -->
+<ncdata hgrid="mpasa15"  nlev="32" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L32_notopo_coords_c240507.nc</ncdata>
+<ncdata hgrid="mpasa120" nlev="58" analytic_ic="1" >atm/cam/inic/mpas/mpasa120_L58_notopo_coords_c240508.nc</ncdata>
+<ncdata hgrid="mpasa15"  nlev="58" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L58_notopo_coords_c240508.nc</ncdata>
 
 <!-- Files with initial conditions -->
 <ncdata dyn="fv"  hgrid="0.23x0.31" nlev="26" ic_ymd="101"      >atm/cam/inic/fv/cami_0000-01-01_0.23x0.31_L26_c100513.nc</ncdata>
@@ -282,15 +286,14 @@
 
 <ncdata hgrid="mpasa120" nlev="70" waccm_phys="1">atm/waccm/ic/mpasa120km.waccm_fulltopo_c220818.nc</ncdata>
 
-<ncdata hgrid="mpasa480" nlev="32" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa480_L32_CFSR_c211013.nc</ncdata>
-<ncdata hgrid="mpasa480" nlev="32" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa480_L32_CFSR_c240508.nc</ncdata>
-<ncdata hgrid="mpasa120" nlev="32" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L32_CFSR_c210426.nc</ncdata>
-<ncdata hgrid="mpasa120" nlev="32" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L32_CFSR_c240508.nc</ncdata>
 <ncdata hgrid="mpasa480" nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa480_L32_CFSR_c211013.nc</ncdata>
+<ncdata hgrid="mpasa480" nlev="32" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa480_L32_CFSR_c240508.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L32_CFSR_c210426.nc</ncdata>
+<ncdata hgrid="mpasa120" nlev="32" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L32_CFSR_c240508.nc</ncdata>
+<!-- Next 2 entries are EarthWorks specific, real-data ICs -->
 <ncdata hgrid="mpasa60"  nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa60_L32_CFSR_c210518.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa30_L32_CFSR_230302.nc</ncdata>
-<!-- EarthWorks Only, 58 vertical levels -->
+<!-- Next 2 entries are EarthWorks specific, 58 vertical levels -->
 <ncdata hgrid="mpasa120" nlev="58" ic_ymd="20000101">atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L58_c230901.nc</ncdata>
 <ncdata hgrid="mpasa15"  nlev="58" ic_ymd="20000101">atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L58_c230316.nc</ncdata>
 
@@ -353,14 +356,10 @@
 <bnd_topo hgrid="mpasa480" phys="cam_dev" >atm/cam/topo/mpas/mpasa480_gmted2010_modis_bedmachine_nc3000_Laplace0400_noleak_20240507.nc</bnd_topo>
 <bnd_topo hgrid="mpasa120" >atm/cam/topo/mpas/mpas_120_nc3000_Co060_Fi001_MulG_PF_Nsw042_c200921.nc</bnd_topo>
 <bnd_topo hgrid="mpasa120" phys="cam_dev" >atm/cam/topo/mpas/mpasa120_gmted2010_modis_bedmachine_nc3000_Laplace0100_noleak_20240507.nc</bnd_topo>
-<!-- EarthWorks specific -->
-<bnd_topo hgrid="mpasa480" >atm/cam/topo/mpas_480_nc3000_Co240_Fi001_MulG_PF_Nsw170.nc</bnd_topo>
-<bnd_topo hgrid="mpasa120" >atm/cam/topo/mpas_120_nc3000_Co060_Fi001_MulG_PF_Nsw042_c200921.nc</bnd_topo>
-<bnd_topo hgrid="mpasa60"  >atm/cam/topo/mpas_60_nc3000_Co030_Fi001_MulG_PF_Nsw021.nc</bnd_topo>
-<bnd_topo hgrid="mpasa30"  >atm/cam/topo/mpas_30_nc3000_Co015_Fi001_MulG_PF_Nsw011.nc</bnd_topo>
-<bnd_topo hgrid="mpasa15"  >atm/cam/topo/mpas_15_nc3500_c20230315.nc</bnd_topo>
-<!-- Corresponds to cami_01-01-2000_00Z_mpasa120_L58_c230901.nc file -->
-<bnd_topo hgrid="mpasa120" nlev="58" >atm/cam/topo/mpasa120_gmted2010_modis_bedmachine_nc3000_Laplace0100_20220728.nc</bnd_topo>
+<!-- Next 3 entires are EarthWorks specific, for real-data cases not in ESCOMP/CAM -->
+<bnd_topo hgrid="mpasa60"  >atm/cam/topo/mpas/mpasa60_gmted2010_modis_bedmachine_nc3000_Laplace0050_noleak_20240507.nc</bnd_topo>
+<bnd_topo hgrid="mpasa30"  >atm/cam/topo/mpas/mpasa30_gmted2010_modis_bedmachine_nc3000_Laplace0025_noleak_20240507.nc</bnd_topo>
+<bnd_topo hgrid="mpasa15"  >atm/cam/topo/mpas/mpasa15_gmted2010_modis_bedmachine_nc3000_Laplace0013_noleak_20240507.nc</bnd_topo>
 
 <!-- Scale Dry Air Mass: 0=> no scaling / +nnn=>scale to nnn Pressure  -->
 <scale_dry_air_mass                                                                >      0.0D0 </scale_dry_air_mass>
