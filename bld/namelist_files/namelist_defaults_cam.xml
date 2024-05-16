@@ -3253,13 +3253,13 @@
 <mpas_time_integration        > SRK3 </mpas_time_integration>
 <mpas_time_integration_order  > 2 </mpas_time_integration_order>
 <mpas_dt                      > 1800.0D0 </mpas_dt>
-<mpas_dt hgrid="mpasa120"     >  900.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa120"     >  600.0D0 </mpas_dt>
 <mpas_dt hgrid="mpasa120" waccm_phys="1"> 600.D0 </mpas_dt>
-<mpas_dt hgrid="mpasa60"      >  450.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa60"      >  300.0D0 </mpas_dt>
 <mpas_dt hgrid="mpasa30"      >  225.0D0 </mpas_dt>
-<mpas_dt hgrid="mpasa15"      >  112.5D0 </mpas_dt>
-<mpas_dt hgrid="mpasa7p5"     >  56.25D0 </mpas_dt>
-<mpas_dt hgrid="mpasa3p75"    >  28.125D0</mpas_dt>
+<mpas_dt hgrid="mpasa15"      >   80.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa7p5"     >   40.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa3p75"    >   20.0D0 </mpas_dt>
 
 <mpas_split_dynamics_transport>.true.</mpas_split_dynamics_transport>
 <mpas_number_of_sub_steps     > 2 </mpas_number_of_sub_steps>
