@@ -2292,6 +2292,15 @@
 <clubb_mf_ent0                     > 0.22    </clubb_mf_ent0>
 <clubb_mf_nup                      > 10      </clubb_mf_nup>
 
+<!-- EarthWorks specific -->
+<!-- Set radiation intervals based on mpas hgrids -->
+<iradlw hgrid="mpasa15"  > 10 </iradlw>
+<iradsw hgrid="mpasa15"  > 10 </iradsw>
+<iradlw hgrid="mpasa7p5" > 10 </iradlw>
+<iradsw hgrid="mpasa7p5" > 10 </iradsw>
+<iradlw hgrid="mpas3p75" > 10 </iradlw>
+<iradsw hgrid="mpas3p75" > 10 </iradsw>
+
 <!-- Microphysics scheme -->
 <micro_mg_do_hail                       > .false. </micro_mg_do_hail>
 <micro_mg_do_graupel                    > .false. </micro_mg_do_graupel>
@@ -3253,13 +3262,13 @@
 <mpas_time_integration        > SRK3 </mpas_time_integration>
 <mpas_time_integration_order  > 2 </mpas_time_integration_order>
 <mpas_dt                      > 1800.0D0 </mpas_dt>
-<mpas_dt hgrid="mpasa120"     >  900.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa120"     >  600.0D0 </mpas_dt>
 <mpas_dt hgrid="mpasa120" waccm_phys="1"> 600.D0 </mpas_dt>
-<mpas_dt hgrid="mpasa60"      >  450.0D0 </mpas_dt>
-<mpas_dt hgrid="mpasa30"      >  225.0D0 </mpas_dt>
-<mpas_dt hgrid="mpasa15"      >  112.5D0 </mpas_dt>
-<mpas_dt hgrid="mpasa7.5"     >  56.25D0 </mpas_dt>
-<mpas_dt hgrid="mpasa3.75"    >  28.125D0</mpas_dt>
+<mpas_dt hgrid="mpasa60"      >  300.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa30"      >  150.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa15"      >   80.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa7p5"     >   40.0D0 </mpas_dt>
+<mpas_dt hgrid="mpasa3p75"    >   20.0D0 </mpas_dt>
 
 <mpas_split_dynamics_transport>.true.</mpas_split_dynamics_transport>
 <mpas_number_of_sub_steps     > 2 </mpas_number_of_sub_steps>
@@ -3278,8 +3287,8 @@
 <mpas_len_disp hgrid="mpasa60">  60000.0D0</mpas_len_disp>
 <mpas_len_disp hgrid="mpasa30">  30000.0D0</mpas_len_disp>
 <mpas_len_disp hgrid="mpasa15">  15000.0D0</mpas_len_disp>
-<mpas_len_disp hgrid="mpasa7.5">  7500.0D0</mpas_len_disp>
-<mpas_len_disp hgrid="mpasa3.75"> 3750.0D0</mpas_len_disp>
+<mpas_len_disp hgrid="mpasa7p5">  7500.0D0</mpas_len_disp>
+<mpas_len_disp hgrid="mpasa3p75"> 3750.0D0</mpas_len_disp>
 
 <mpas_visc4_2dsmag            > 0.05D0 </mpas_visc4_2dsmag>
 <mpas_del4u_div_factor        > 10.0D0 </mpas_del4u_div_factor>
