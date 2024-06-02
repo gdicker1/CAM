@@ -290,12 +290,16 @@
 <ncdata hgrid="mpasa480" nlev="32" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa480_L32_CFSR_c240508.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L32_CFSR_c210426.nc</ncdata>
 <ncdata hgrid="mpasa120" nlev="32" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L32_CFSR_c240508.nc</ncdata>
-<!-- Next 2 entries are EarthWorks specific, real-data ICs -->
+<!-- Next 4 entries are EarthWorks specific, real-data ICs -->
 <ncdata hgrid="mpasa60"  nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa60_L32_CFSR_c210518.nc</ncdata>
+<ncdata hgrid="mpasa60"  nlev="32" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa60_L32_CFSR_c240508.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="32" ic_ymd="20000101" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa30_L32_CFSR_230302.nc</ncdata>
-<!-- Next 2 entries are EarthWorks specific, 58 vertical levels -->
+<ncdata hgrid="mpasa60"  nlev="32" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa30_L32_CFSR_c240508.nc</ncdata>
+<!-- Next 4 entries are EarthWorks specific, 58 vertical levels -->
 <ncdata hgrid="mpasa120" nlev="58" ic_ymd="20000101">atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L58_c230901.nc</ncdata>
+<ncdata hgrid="mpasa120" nlev="58" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa120_L58_CFSR_c240508.nc</ncdata>
 <ncdata hgrid="mpasa15"  nlev="58" ic_ymd="20000101">atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L58_c230316.nc</ncdata>
+<ncdata hgrid="mpasa15"  nlev="58" ic_ymd="20000101" phys="cam_dev" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L58_CFSR_c240508.nc</ncdata>
 
 <!-- Topography -->
 <bnd_topo hgrid="256x512" >atm/cam/topo/topo-from-cami_0000-01-01_256x512_L26_c030918.nc</bnd_topo>
