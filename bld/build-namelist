@@ -3747,7 +3747,7 @@ if (!$simple_phys) {
 }
 
 if ($waccm_phys or
-    (!$simple_phys and $cfg->get('nlev') >= 60)) {
+    (!$simple_phys and $cfg->get('nlev') >= 60) and $dyn !~ /mpas/) {
     # Spectral gravity waves are part of WACCM physics, and also drive the
     # QBO in the high vertical resolution configuration.
     add_default($nl, 'use_gw_front'     , 'val'=>'.true.');
@@ -3770,7 +3770,7 @@ if ($waccm_phys or
     }
     add_default($nl, 'gw_qbo_hdepth_scaling', 'val'=>$hdepth_scaling);
     add_default($nl, 'gw_top_taper');
-} elsif ($phys =~ /cam_dev/) {
+} elsif ($phys =~ /cam_dev/ and $dyn !~ /mpas/) {
     # cam_dev settings for nlev<60 (Other cam_dev set above)
     add_default($nl, 'use_gw_front'     , 'val'=>'.true.');
     add_default($nl, 'use_gw_convect_dp', 'val'=>'.true.');
