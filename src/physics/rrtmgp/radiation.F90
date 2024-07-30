@@ -1174,6 +1174,16 @@ subroutine radiation_tend( &
                   
                if (nday > 0) then
 
+                  !! ADDED by SS as part of RRTMGP data optimization
+                  !$acc data copyin(atm_optics_sw, toa_flux, &
+                  !$acc aer_sw, cloud_sw,  &
+                  !$acc aer_sw%tau, aer_sw%ssa, aer_sw%g, &
+                  !$acc atm_optics_sw%tau,  &
+                  !$acc atm_optics_sw%ssa, atm_optics_sw%g,   &
+                  !$acc cloud_sw%tau, cloud_sw%ssa, cloud_sw%g,  &
+                  !$acc alb_dir, alb_dif) &
+                  !$acc copy(fswc, fsw)
+
                   ! Increment the gas optics (in atm_optics_sw) by the aerosol optics in aer_sw.
                   errmsg = aer_sw%increment(atm_optics_sw)
                   call stop_on_err(errmsg, sub, 'aer_sw%increment')
@@ -1193,6 +1203,7 @@ subroutine radiation_tend( &
                      atm_optics_sw, top_at_1, coszrs_day, toa_flux, &
                      alb_dir, alb_dif, fsw)
                   call stop_on_err(errmsg, sub, 'all-sky rte_sw')
+                  !$acc end data
 
                end if
 
@@ -1257,6 +1268,18 @@ subroutine radiation_tend( &
                ! Set LW aerosol optical properties in the aer_lw object.
                call rrtmgp_set_aer_lw(icall, state, pbuf, aer_lw)
                
+               !! Added by SS as part of RRTMGP data optimization
+               !$acc data copyin(atm_optics_lw, aer_lw, cloud_lw,  &
+               !$acc aer_lw%tau, &
+               !$acc atm_optics_lw%tau, &
+               !$acc cloud_lw%tau, &
+               !$acc sources_lw, &
+               !$acc sources_lw%lay_source, sources_lw%sfc_source,  &
+               !$acc sources_lw%lev_source_inc, sources_lw%lev_source_dec,  &
+               !$acc sources_lw%sfc_source_Jac, &
+               !$acc emis_sfc)  &
+               !$acc copy(flwc,flw)
+
                ! Increment the gas optics by the aerosol optics.
                errmsg = aer_lw%increment(atm_optics_lw)
                call stop_on_err(errmsg, sub, 'aer_lw%increment')
@@ -1272,6 +1295,7 @@ subroutine radiation_tend( &
                ! Compute all-sky LW fluxes
                errmsg = rte_lw(atm_optics_lw, top_at_1, sources_lw, emis_sfc, flw)
                call stop_on_err(errmsg, sub, 'all-sky rte_lw')
+               !$acc end data
 
                ! Transform RRTMGP outputs to CAM outputs and compute heating rates.
                call set_lw_diags()
