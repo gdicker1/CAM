@@ -77,10 +77,10 @@
 
 [submodule "mpas"]
 	path = src/dynamics/mpas/dycore
-	url = https://github.com/MPAS-Dev/MPAS-Model.git
+	url = https://github.com/EarthWorksOrg/MPAS-Model.git
         fxrequired = AlwaysRequired
         fxsparse = ../.mpas_sparse_checkout
-        fxtag = ff76a231
+        fxtag = mpas-ew2.3.001
 	fxDONOTUSEurl = https://github.com/MPAS-Dev/MPAS-Model.git
 
 [submodule "cosp2"]
