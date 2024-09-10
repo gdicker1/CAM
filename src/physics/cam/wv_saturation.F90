@@ -35,6 +35,7 @@ use physconst,    only: epsilo, &
 use wv_sat_methods, only: &
      svp_to_qsat => wv_sat_svp_to_qsat, &
      svp_to_qsat_vect => wv_sat_svp_to_qsat_vect
+use perf_mod, only: t_startf, t_stopf
 
 implicit none
 private
@@ -761,6 +762,7 @@ subroutine qsat_line(t, p, es, qs, gam, dqsdt, enthalpy)
   real(r8) :: hltalt       ! Modified latent heat for T derivatives
   real(r8) :: tterm        ! Account for d(es)/dT in transition region
 
+  call t_startf('qsat:CPU')
   es = estblf(t)
 
   qs = svp_to_qsat(es, p)
@@ -781,6 +783,7 @@ subroutine qsat_line(t, p, es, qs, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat:CPU')
 
 end subroutine qsat_line
 
@@ -815,9 +818,12 @@ subroutine qsat_vect(t, p, es, qs, vlen, gam, dqsdt, enthalpy)
   present_dqsdt = present(dqsdt)
   present_enthalpy = present(enthalpy)
 
+  call t_startf('qsat:DTO')
   !$acc data copyin  (t,p) &
   !$acc      copyout (es,qs,gam,dqsdt,enthalpy) &
   !$acc      create  (hltalt,tterm)
+  call t_stopf('qsat:DTO')
+  call t_startf('qsat:ACCR')
 
   call estblf_vect(t, es, vlen)
 
@@ -846,7 +852,10 @@ subroutine qsat_vect(t, p, es, qs, vlen, gam, dqsdt, enthalpy)
 
   end if
 
+  call t_stopf('qsat:ACCR')
+  call t_startf('qsat:DTO')
   !$acc end data
+  call t_stopf('qsat:DTO')
 end subroutine qsat_vect
 
 subroutine qsat_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
@@ -881,10 +890,13 @@ subroutine qsat_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
   present_dqsdt = present(dqsdt)
   present_enthalpy = present(enthalpy)
 
+  call t_startf('qsat:DTO')
   !$acc data copyin  (t,p) &
   !$acc      copyout (es,qs,gam,dqsdt,enthalpy) &
   !$acc      create  (hltalt,tterm)
+  call t_stopf('qsat:DTO')
 
+  call t_startf('qsat:ACCR')
   call estblf_vect(t, es, vlen)
 
   call svp_to_qsat_vect(es, p, qs, vlen)
@@ -913,8 +925,11 @@ subroutine qsat_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat:ACCR')
 
+  call t_startf('qsat:DTO')
   !$acc end data
+  call t_stopf('qsat:DTO')
 end subroutine qsat_2D
 
 subroutine qsat_water_line(t, p, es, qs, gam, dqsdt, enthalpy)
@@ -942,6 +957,7 @@ subroutine qsat_water_line(t, p, es, qs, gam, dqsdt, enthalpy)
   ! Local variables
   real(r8) :: hltalt       ! Modified latent heat for T derivatives
 
+  call t_startf('qsat_water:CPU')
   call wv_sat_qsat_water(t, p, es, qs)
 
   if (present(gam) .or. present(dqsdt) .or. present(enthalpy)) then
@@ -957,6 +973,7 @@ subroutine qsat_water_line(t, p, es, qs, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat_water:CPU')
 
 end subroutine qsat_water_line
 
@@ -993,10 +1010,13 @@ subroutine qsat_water_vect(t, p, es, qs, vlen, gam, dqsdt, enthalpy)
   present_dqsdt    = present(dqsdt) 
   present_enthalpy = present(enthalpy) 
 
+  call t_startf('qsat_water:DTO')
   !$acc data copyin  (t,p) &
   !$acc      copyout (es,qs,gam,dqsdt,enthalpy) &
   !$acc      create  (tterm,hltalt)
+  call t_stopf('qsat_water:DTO')
 
+  call t_startf('qsat_water:ACCR')
   !$acc parallel vector_length(VLENS) default(present)
   !$acc loop gang vector
   do i = 1, vlen
@@ -1019,8 +1039,11 @@ subroutine qsat_water_vect(t, p, es, qs, vlen, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat_water:ACCR')
 
+  call t_startf('qsat_water:DTO')
   !$acc end data
+  call t_stopf('qsat_water:DTO')
 end subroutine qsat_water_vect
 
 subroutine qsat_water_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
@@ -1057,10 +1080,13 @@ subroutine qsat_water_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
   present_dqsdt = present(dqsdt)
   present_enthalpy = present(enthalpy)
 
+  call t_startf('qsat_water:DTO')
   !$acc data copyin  (t,p) &
   !$acc      copyout (es,qs,gam,dqsdt,enthalpy) &
   !$acc      create  (hltalt,tterm)
+  call t_stopf('qsat_water:DTO')
 
+  call t_startf('qsat_water:ACCR')
   !$acc parallel vector_length(VLENS) default(present)
   !$acc loop gang vector collapse(2)
   do k = 1, dim2
@@ -1085,8 +1111,11 @@ subroutine qsat_water_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat_water:ACCR')
 
+  call t_startf('qsat_water:DTO')
   !$acc end data
+  call t_stopf('qsat_water:DTO')
 end subroutine qsat_water_2D
 
 subroutine qsat_ice_line(t, p, es, qs, gam, dqsdt, enthalpy)
@@ -1114,6 +1143,7 @@ subroutine qsat_ice_line(t, p, es, qs, gam, dqsdt, enthalpy)
   ! Local variables
   real(r8) :: hltalt       ! Modified latent heat for T derivatives
 
+  call t_startf('qsat_ice:CPU')
   call wv_sat_qsat_ice(t, p, es, qs)
 
   if (present(gam) .or. present(dqsdt) .or. present(enthalpy)) then
@@ -1128,6 +1158,7 @@ subroutine qsat_ice_line(t, p, es, qs, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat_ice:CPU')
 
 end subroutine qsat_ice_line
 
@@ -1164,10 +1195,13 @@ subroutine qsat_ice_vect(t, p, es, qs, vlen, gam, dqsdt, enthalpy)
   present_dqsdt = present(dqsdt)
   present_enthalpy = present(enthalpy)
 
+  call t_startf('qsat_ice:DTO')
   !$acc data copyin  (t,p) &
   !$acc      copyout (es,qs,gam,dqsdt,enthalpy) &
   !$acc      create  (hltalt,tterm)
+  call t_stopf('qsat_ice:DTO')
 
+  call t_startf('qsat_ice:ACCR')
   !$acc parallel vector_length(VLENS) default(present)
   !$acc loop gang vector
   do i = 1, vlen
@@ -1194,8 +1228,11 @@ subroutine qsat_ice_vect(t, p, es, qs, vlen, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat_ice:ACCR')
 
+  call t_startf('qsat_ice:DTO')
   !$acc end data
+  call t_stopf('qsat_ice:DTO')
 end subroutine qsat_ice_vect
 
 subroutine qsat_ice_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
@@ -1232,10 +1269,13 @@ subroutine qsat_ice_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
   present_dqsdt = present(dqsdt)
   present_enthalpy = present(enthalpy)
 
+  call t_stopf('qsat_ice:DTO')
   !$acc data copyin  (t,p) &
   !$acc      copyout (es,qs,gam,dqsdt,enthalpy) &
   !$acc      create  (hltalt,tterm)
+  call t_stopf('qsat_ice:DTO')
 
+  call t_startf('qsat_ice:ACCR')
   !$acc parallel vector_length(VLENS) default(present)
   !$acc loop gang vector collapse(2)
   do k = 1, dim2
@@ -1266,8 +1306,11 @@ subroutine qsat_ice_2D(t, p, es, qs, dim1, dim2, gam, dqsdt, enthalpy)
           gam=gam, dqsdt=dqsdt)
 
   end if
+  call t_stopf('qsat_ice:ACCR')
 
+  call t_startf('qsat_ice:DTO')
   !$acc end data
+  call t_stopf('qsat_ice:DTO')
 end subroutine qsat_ice_2D
 
 !---------------------------------------------------------------------
