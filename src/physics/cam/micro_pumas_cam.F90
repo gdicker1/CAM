@@ -1391,6 +1391,7 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
    use tropopause,      only: tropopause_find, TROP_ALG_CPP, TROP_ALG_NONE, NOTFOUND
    use wv_saturation,   only: qsat
    use infnan,          only: nan, assignment(=)
+   use perf_mod, only: t_startf, t_stopf
 
    type(physics_state),         intent(in)    :: state
    type(physics_ptend),         intent(out)   :: ptend
