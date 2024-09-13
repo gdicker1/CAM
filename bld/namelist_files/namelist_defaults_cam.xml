@@ -59,7 +59,7 @@
 <!-- Next entries are EarthWorks specific -->
 <ncdata hgrid="mpasa15"  nlev="32" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L32_notopo_coords_c240911.nc</ncdata>
 <ncdata hgrid="mpasa15"  nlev="58" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L58_notopo_coords_c240911.nc</ncdata>
-<ncdata hgrid="mpasa15"  nlev="58" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L58_notopo_coords_c240911.nc</ncdata>
+<ncdata hgrid="mpasa15"  nlev="93" analytic_ic="1" >atm/cam/inic/mpas/mpasa15_L93_notopo_coords_c240911.nc</ncdata>
 <!-- END EarthWorks specific -->
 
 <!-- Files with initial conditions -->
@@ -297,13 +297,13 @@
 <!-- Next entries are EarthWorks specific, real-data ICs -->
 <ncdata hgrid="mpasa60"  nlev="32" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa60_L32_CFSR_c240508.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="32" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa30_L32_CFSR_c240508.nc</ncdata>
-<ncdata hgrid="mpasa15"  nlev="32" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L32_CFSR_c240508.nc</ncdata>
+<ncdata hgrid="mpasa15"  nlev="32" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L32_CFSR_c240911.nc</ncdata>
 <ncdata hgrid="mpasa60"  nlev="58" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa60_L58_CFSR_c240905.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="58" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa30_L58_CFSR_c240905.nc</ncdata>
-<ncdata hgrid="mpasa15"  nlev="58" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L58_CFSR_c240911.nc</ncdata>
+<ncdata hgrid="mpasa15"  nlev="58" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L58_CFSR_c240905.nc</ncdata>
 <ncdata hgrid="mpasa60"  nlev="93" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa60_L93_CFSR_c240905.nc</ncdata>
 <ncdata hgrid="mpasa30"  nlev="93" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa30_L93_CFSR_c240905.nc</ncdata>
-<ncdata hgrid="mpasa15"  nlev="93" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L93_CFSR_c240911.nc</ncdata>
+<ncdata hgrid="mpasa15"  nlev="93" >atm/cam/inic/mpas/cami_01-01-2000_00Z_mpasa15_L93_CFSR_c240905.nc</ncdata>
 <!-- END EarthWorks specific, real-data ICs -->
 
 <!-- Topography -->
