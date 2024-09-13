@@ -1391,6 +1391,7 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
    use tropopause,      only: tropopause_find, TROP_ALG_CPP, TROP_ALG_NONE, NOTFOUND
    use wv_saturation,   only: qsat
    use infnan,          only: nan, assignment(=)
+   use perf_mod, only: t_startf, t_stopf
 
    type(physics_state),         intent(in)    :: state
    type(physics_ptend),         intent(out)   :: ptend
@@ -1887,6 +1888,7 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
 
    nan_array = nan
 
+   call t_startf('micro_pumas_cam_tend:NAR')
    call phys_getopts(use_subcol_microp_out=use_subcol_microp)
 
    ! Set the col_type flag to grid or subcolumn dependent on the value of use_subcol_microp
@@ -2354,6 +2356,7 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
    frzimm(:ncol,:top_lev-1)=0._r8
    frzcnt(:ncol,:top_lev-1)=0._r8
    frzdep(:ncol,:top_lev-1)=0._r8
+   call t_stopf('micro_pumas_cam_tend:NAR')
 
    do it = 1, num_steps
 
@@ -2402,6 +2405,7 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
 
          end select
       case(2:3)
+         call t_startf('micro_pumas_cam_tend:micro_pumas_tend')
          call micro_pumas_tend( &
               ncol,         nlev,           dtime/num_steps,&
               state_loc%t(:ncol,top_lev:),              state_loc%q(:ncol,top_lev:,ixq),            &
@@ -2470,8 +2474,10 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
               tnd_qsnow(:ncol,top_lev:),tnd_nsnow(:ncol,top_lev:),re_ice(:ncol,top_lev:),&
               prer_evap(:ncol,top_lev:),                                     &
               frzimm(:ncol,top_lev:),  frzcnt(:ncol,top_lev:),  frzdep(:ncol,top_lev:)   )
+         call t_stopf('micro_pumas_cam_tend:micro_pumas_tend')
       end select
 
+      call t_startf('micro_pumas_cam_tend:NAR')
       call handle_errmsg(errstring, subname="micro_pumas_tend")
 
       call physics_ptend_init(ptend_loc, psetcols, "micro_pumas", &
@@ -2945,17 +2951,25 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
    rel_fn_grid = 10._r8
 
    ncic_grid = 1.e8_r8
+   call t_stopf('micro_pumas_cam_tend:NAR')
 
    do k = top_lev, pver
+      call t_startf('micro_pumas_cam_tend:DTO');
       !$acc data copyin  (mg_liq_props,icwmrst_grid(:ngrdcol,k),rho_grid(:ngrdcol,k)) &
       !$acc      copy    (ncic_grid(:ngrdcol,k)) &
       !$acc      copyout (mu_grid(:ngrdcol,k),lambdac_grid(:ngrdcol,k))
+      call t_stopf('micro_pumas_cam_tend:DTO');
+      call t_startf('micro_pumas_cam_tend:ACCR');
       call size_dist_param_liq(mg_liq_props, icwmrst_grid(:ngrdcol,k), &
                                ncic_grid(:ngrdcol,k), rho_grid(:ngrdcol,k), &
                                mu_grid(:ngrdcol,k), lambdac_grid(:ngrdcol,k), ngrdcol)
+      call t_stopf('micro_pumas_cam_tend:ACCR');
+      call t_startf('micro_pumas_cam_tend:DTO');
       !$acc end data
+      call t_stopf('micro_pumas_cam_tend:DTO');
    end do
 
+   call t_startf('micro_pumas_cam_tend:NAR')
    where (icwmrst_grid(:ngrdcol,top_lev:) > qsmall)
       rel_fn_grid(:ngrdcol,top_lev:) = &
            (mu_grid(:ngrdcol,top_lev:) + 3._r8)/ &
@@ -2971,17 +2985,25 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
    ! Calculate ncic on the grid
    ncic_grid(:ngrdcol,top_lev:) = nc_grid(:ngrdcol,top_lev:) / &
         max(mincld,liqcldf_grid(:ngrdcol,top_lev:))
+   call t_stopf('micro_pumas_cam_tend:NAR')
 
    do k = top_lev, pver
+      call t_startf('micro_pumas_cam_tend:DTO');
       !$acc data copyin  (mg_liq_props,icwmrst_grid(:ngrdcol,k), rho_grid(:ngrdcol,k)) &
       !$acc      copy    (ncic_grid(:ngrdcol,k)) &
       !$acc      copyout (mu_grid(:ngrdcol,k),lambdac_grid(:ngrdcol,k))
+      call t_stopf('micro_pumas_cam_tend:DTO');
+      call t_startf('micro_pumas_cam_tend:ACCR');
       call size_dist_param_liq(mg_liq_props, icwmrst_grid(:ngrdcol,k), &
            ncic_grid(:ngrdcol,k), rho_grid(:ngrdcol,k), &
            mu_grid(:ngrdcol,k), lambdac_grid(:ngrdcol,k), ngrdcol)
+      call t_stopf('micro_pumas_cam_tend:ACCR');
+      call t_startf('micro_pumas_cam_tend:DTO');
       !$acc end data
+      call t_stopf('micro_pumas_cam_tend:DTO');
    end do
 
+   call t_startf('micro_pumas_cam_tend:NAR')
    where (icwmrst_grid(:ngrdcol,top_lev:) >= qsmall)
       rel_grid(:ngrdcol,top_lev:) = &
            (mu_grid(:ngrdcol,top_lev:) + 3._r8) / &
@@ -3075,16 +3097,24 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
 
    niic_grid(:ngrdcol,top_lev:) = ni_grid(:ngrdcol,top_lev:) / &
         max(mincld,icecldf_grid(:ngrdcol,top_lev:))
+   call t_stopf('micro_pumas_cam_tend:NAR')
 
    do k = top_lev, pver
+      call t_startf('micro_pumas_cam_tend:DTO');
       !$acc data copyin  (mg_ice_props, icimrst_grid(:ngrdcol,k)) &
       !$acc      copy    (niic_grid(:ngrdcol,k)) &
       !$acc      copyout (rei_grid(:ngrdcol,k))
+      call t_stopf('micro_pumas_cam_tend:DTO');
+      call t_startf('micro_pumas_cam_tend:ACCR');
       call size_dist_param_basic(mg_ice_props,icimrst_grid(:ngrdcol,k), &
                                  niic_grid(:ngrdcol,k),rei_grid(:ngrdcol,k),ngrdcol)
+      call t_stopf('micro_pumas_cam_tend:ACCR');
+      call t_startf('micro_pumas_cam_tend:DTO');
       !$acc end data
+      call t_stopf('micro_pumas_cam_tend:DTO');
    end do
 
+   call t_startf('micro_pumas_cam_tend:NAR')
    where (icimrst_grid(:ngrdcol,top_lev:) >= qsmall)
       rei_grid(:ngrdcol,top_lev:) = 1.5_r8/rei_grid(:ngrdcol,top_lev:) &
            * 1.e6_r8
@@ -3613,6 +3643,7 @@ subroutine micro_pumas_cam_tend(state, ptend, dtime, pbuf)
    if (qsatfac_idx <= 0) then
       deallocate(qsatfac)
    end if
+   call t_stopf('micro_pumas_cam_tend:NAR')
 
 end subroutine micro_pumas_cam_tend
 

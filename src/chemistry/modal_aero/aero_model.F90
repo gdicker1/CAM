@@ -1149,7 +1149,7 @@ contains
     endif
 
     if (convproc_do_aer) then
-       call t_startf('ma_convproc')
+       call t_startf('aero_model_wetdep:NAR:ma_convproc')
        call ma_convproc_intr( state, ptend, pbuf, dt, &
             nsrflx_mzaer2cnvpr, qsrflx_mzaer2cnvpr, aerdepwetis, dcondt_resusp3d)
 
@@ -1174,7 +1174,7 @@ contains
              end do ! loop over number + chem constituents
           end do   ! m aerosol modes
        end if
-       call t_stopf('ma_convproc')
+       call t_stopf('aero_model_wetdep:NAR:ma_convproc')
     endif
 
     do m = 1, ntot_amode ! main loop over aerosol modes
@@ -1320,6 +1320,7 @@ contains
                    qqcw_in(:,:) = fldcw(:,:)
                 endif
 
+                call t_startf('aero_model_wetdep:NAR:wetdepa')
                 call wetdepa_v2( state%pmid, state%q(:,:,1), state%pdel, &
                      dep_inputs%cldt, dep_inputs%cldcu, dep_inputs%cmfdqr, &
                      dep_inputs%evapc, dep_inputs%conicw, dep_inputs%prain, dep_inputs%qme, &
@@ -1334,6 +1335,7 @@ contains
                      convproc_do_aer=convproc_do_aer, rcscavt=rcscavt, rsscavt=rsscavt,  &
                      sol_facti_in=sol_facti, sol_factic_in=sol_factic, &
                      convproc_do_evaprain_atonce_in=convproc_do_evaprain_atonce )
+                call t_stopf('aero_model_wetdep:NAR:wetdepa')
 
                 do_hygro_sum_del = .false.
                 if ( lspec > 0 ) do_hygro_sum_del = .true.
@@ -1549,6 +1551,7 @@ contains
                       fldcw => qqcw_get_field(pbuf, mm,lchnk)
                    endif
 
+                   call t_startf('aero_model_wetdep:NAR:wetdepa')
                    call wetdepa_v2(state%pmid, state%q(:,:,1), state%pdel, &
                         dep_inputs%cldt, dep_inputs%cldcu, dep_inputs%cmfdqr, &
                         dep_inputs%evapc, dep_inputs%conicw, dep_inputs%prain, dep_inputs%qme, &
@@ -1562,6 +1565,7 @@ contains
                         sol_facti_in=sol_facti, sol_factic_in=sol_factic, &
                         convproc_do_evaprain_atonce_in=convproc_do_evaprain_atonce, &
                         bergso_in=dep_inputs%bergso )
+                   call t_stopf('aero_model_wetdep:NAR:wetdepa')
 
                    if(convproc_do_aer) then
                       ! save resuspension of cloudborne species
