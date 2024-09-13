@@ -1,4 +1,8 @@
-CPPFLAGS := -D_MPI -DMPAS_NATIVE_TIMERS -DMPAS_GIT_VERSION=unknown -DMPAS_NAMELIST_SUFFIX=atmosphere -DMPAS_CAM_DYCORE -DMPAS_PIO_SUPPORT -DMPAS_NO_ESMF_INIT
+CPPFLAGS := -D_MPI -DMPAS_NATIVE_TIMERS -DMPAS_GIT_VERSION=unknown -DMPAS_NAMELIST_SUFFIX=atmosphere -DMPAS_CAM_DYCORE -DMPAS_NO_ESMF_INIT
+$(info $$GPUFLAGS=[${GPUFLAGS}])
+ifdef GPUFLAGS
+  CPPFLAGS += -DMPAS_OPENACC
+endif
 ifdef PIODEF
   CPPFLAGS += $(PIODEF)
 endif
@@ -18,7 +22,6 @@ INTERFACE_OBJS = \
 	mpas_atm_core_interface.o \
 	mpas_atm_dimensions.o \
 	mpas_atm_threading.o \
-	mpas_atm_halos.o \
 	cam_mpas_subdriver.o
 
 DYN_OBJS = \
@@ -32,11 +35,10 @@ DIAG_OBJS = \
 
 DIAGNOSTICS = \
 	mpas_atm_diagnostic_template.o \
-	mpas_isobaric_diagnostics.o \
-	mpas_cloud_diagnostics.o \
-	mpas_convective_diagnostics.o \
-	mpas_pv_diagnostics.o \
-	mpas_soundings.o
+	isobaric_diagnostics.o \
+	convective_diagnostics.o \
+	pv_diagnostics.o \
+	soundings.o
 
 REG_OBJS = \
 	parse.o \
@@ -92,10 +94,7 @@ FRAME_OBJS = \
 	mpas_pool_routines.o \
 	xml_stream_parser.o \
 	regex_matching.o \
-	mpas_log.o \
-	mpas_halo.o \
-	mpas_string_utils.o
-
+	mpas_log.o
 
 UTIL_OBJS = \
 	ezxml.o
@@ -134,8 +133,7 @@ mpas_framework.o: mpas_dmpar.o \
                   mpas_io_units.o \
                   mpas_block_decomp.o \
                   mpas_stream_manager.o \
-                  mpas_c_interfacing.o \
-                  mpas_halo.o
+                  mpas_c_interfacing.o
 
 mpas_abort.o: mpas_kind_types.o mpas_io_units.o mpas_threading.o
 
@@ -161,7 +159,7 @@ mpas_dmpar.o: mpas_sort.o mpas_kind_types.o mpas_derived_types.o mpas_hash.o mpa
 
 mpas_sort.o: mpas_kind_types.o mpas_log.o
 
-mpas_timekeeping.o: mpas_string_utils.o mpas_kind_types.o mpas_derived_types.o mpas_dmpar.o mpas_threading.o mpas_log.o
+mpas_timekeeping.o: mpas_kind_types.o mpas_derived_types.o mpas_dmpar.o mpas_threading.o mpas_log.o
 
 mpas_timer.o: mpas_kind_types.o mpas_dmpar.o mpas_threading.o mpas_log.o
 
@@ -185,7 +183,6 @@ mpas_stream_manager.o: mpas_io_streams.o mpas_timekeeping.o mpas_derived_types.o
 
 mpas_forcing.o: mpas_derived_types.o mpas_timekeeping.o mpas_stream_manager.o mpas_log.o mpas_io_units.o
 
-mpas_halo.o: mpas_derived_types.o mpas_pool_routines.o mpas_log.o
 
 #
 # Operator dependencies
@@ -241,10 +238,9 @@ mpas_atm_time_integration.o: mpas_atm_iau.o mpas_atm_dimensions.o mpas_atm_bound
 #
 mpas_atm_diagnostics_manager.o: mpas_atm_diagnostics_utils.o $(DIAGNOSTICS)
 
-mpas_cloud_diagnostics.o: mpas_atm_diagnostics_utils.o
-mpas_convective_diagnostics.o: mpas_atm_diagnostics_utils.o
-mpas_isobaric_diagnostics.o: mpas_atm_diagnostics_utils.o
-mpas_pv_diagnostics.o: mpas_atm_diagnostics_utils.o
+convective_diagnostics.o: mpas_atm_diagnostics_utils.o
+isobaric_diagnostics.o: mpas_atm_diagnostics_utils.o
+pv_diagnostics.o: mpas_atm_diagnostics_utils.o
 
 
 #
@@ -252,7 +248,7 @@ mpas_pv_diagnostics.o: mpas_atm_diagnostics_utils.o
 #
 mpas_atm_core_interface.o: mpas_atm_core.o incs
 
-mpas_atm_core.o: mpas_atm_threading.o mpas_atm_time_integration.o mpas_atm_diagnostics_manager.o mpas_atm_halos.o
+mpas_atm_core.o: mpas_atm_threading.o mpas_atm_time_integration.o mpas_atm_diagnostics_manager.o
 
 cam_mpas_subdriver.o: mpas_atm_core_interface.o mpas_derived_types.o mpas_framework.o mpas_domain_routines.o mpas_pool_routines.o
 
@@ -268,8 +264,8 @@ clean:
 	$(CC) -c $(CFLAGS) -DUNDERSCORE $(CPPFLAGS) $(CPPINCLUDES) -I$(MPAS_SRC_ROOT)/dycore/src/external/ezxml $<
 
 %.o : %.F
-	$(FC) -c $(CPPFLAGS) $(FFLAGS) $(CPPINCLUDES) $(FCINCLUDES) $<
+	$(FC) -c $(CPPFLAGS) $(FFLAGS) $(GPUFLAGS) $(CPPINCLUDES) $(FCINCLUDES) $<
 
 %.o : %.F90
-	$(FC) -c $(CPPFLAGS) $(FFLAGS) $(CPPINCLUDES) $(FCINCLUDES) $<
+	$(FC) -c $(CPPFLAGS) $(FFLAGS) $(GPUFLAGS) $(CPPINCLUDES) $(FCINCLUDES) $<
 

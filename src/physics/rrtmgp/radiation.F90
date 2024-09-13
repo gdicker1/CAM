@@ -58,6 +58,7 @@ use mo_fluxes_byband,      only: ty_fluxes_byband
 use string_utils,        only: to_lower
 use cam_abortutils,      only: endrun, handle_allocate_error
 use cam_logfile,         only: iulog
+use perf_mod,            only: t_startf, t_stopf
 
 
 implicit none
@@ -453,6 +454,7 @@ subroutine radiation_init(pbuf2d)
    ! pressure interfaces below 1 Pa.  When the entire model atmosphere is
    ! below 1 Pa then an extra layer is added to the top of the model for
    ! the purpose of the radiation calculation.
+
    nlay = count( pref_edge(:) > 1._r8 ) ! pascals (0.01 mbar)
 
    if (nlay == pverp) then
@@ -461,6 +463,14 @@ subroutine radiation_init(pbuf2d)
       ktopcam = 1
       ktoprad = 2
       nlaycam = pver
+   else if (nlay == (pverp-1)) then
+      ! Special case nlay == (pverp-1) -- topmost interface outside bounds (CAM MT config), treat as if it is ok.
+      ktopcam = 1
+      ktoprad = 2
+      nlaycam = pver
+      nlay = nlay+1 ! reassign the value so later code understands to treat this case like nlay==pverp
+      write(iulog,*) 'RADIATION_INIT: Special case of 1 model interface at p < 1Pa. Top layer will be INCLUDED in radiation calculation.'
+      write(iulog,*) 'RADIATION_INIT: nlay = ',nlay, ' same as pverp: ',nlay==pverp
    else
       ! nlay < pverp.  nlay layers are used in radiation calcs, and they are
       ! all CAM layers.
@@ -468,7 +478,7 @@ subroutine radiation_init(pbuf2d)
       ktoprad = 1
       nlaycam = nlay
    end if
-
+   
    ! Create lowercase version of the gaslist for RRTMGP.  The ty_gas_concs objects
    ! work with CAM's uppercase names, but other objects that get input from the gas
    ! concs objects don't work.
@@ -1110,6 +1120,7 @@ subroutine radiation_tend( &
 
       if (dosw) then
 
+         call t_startf('radiation_tend:NAR:cloud_sw')
          ! Set cloud optical properties in cloud_sw object.
          call rrtmgp_set_cloud_sw( &
             state, pbuf, nlay, nday, idxday,                              &
@@ -1118,6 +1129,7 @@ subroutine radiation_tend( &
             rd%tot_cld_vistau, rd%tot_icld_vistau, rd%liq_icld_vistau,    &
             rd%ice_icld_vistau, rd%snow_icld_vistau, rd%grau_icld_vistau, &
             cld_tau_cloudsim, snow_tau_cloudsim, grau_tau_cloudsim )
+         call t_stopf('radiation_tend:NAR:cloud_sw')
 
          if (write_output) then
             call radiation_output_cld(lchnk, rd)
@@ -1149,15 +1161,28 @@ subroutine radiation_tend( &
                if (nday > 0) then
 
                   ! Set gas volume mixing ratios for this call in gas_concs_sw.
+                  call t_startf('radiation_tend:NAR:gases_sw')
                   call rrtmgp_set_gases_sw( &
                      icall, state, pbuf, nlay, nday, &
                      idxday, gas_concs_sw)
+                  call t_stopf('radiation_tend:NAR:gases_sw')
 
+                  call t_startf('radiation_tend:DTO')
                   ! Compute the gas optics (stored in atm_optics_sw).
                   ! toa_flux is the reference solar source from RRTMGP data.
+                  !$acc data copyin(kdist_sw,pmid_day,pint_day,t_day,gas_concs_sw) &
+                  !$acc      copy(atm_optics_sw) &
+                  !$acc      copyout(toa_flux)
+                  call t_stopf('radiation_tend:DTO')
+
+                  call t_startf('radiation_tend:ACCR')
                   errmsg = kdist_sw%gas_optics( &
                      pmid_day, pint_day, t_day, gas_concs_sw, atm_optics_sw, &
                      toa_flux)
+                  call t_stopf('radiation_tend:ACCR')
+                  call t_startf('radiation_tend:DTO')
+                  !$acc end data
+                  call t_stopf('radiation_tend:DTO')
                   call stop_on_err(errmsg, sub, 'kdist_sw%gas_optics')
 
                   ! Scale the solar source
@@ -1169,11 +1194,27 @@ subroutine radiation_tend( &
                ! Set SW aerosol optical properties in the aer_sw object.
                ! This call made even when no daylight columns because it does some
                ! diagnostic aerosol output.
+               call t_startf('radiation_tend:NAR:aer_sw')
                call rrtmgp_set_aer_sw( &
                   icall, state, pbuf, nday, idxday, nnite, idxnite, aer_sw)
+               call t_stopf('radiation_tend:NAR:aer_sw')
                   
                if (nday > 0) then
 
+                  call t_startf('radiation_tend:DTO')
+                  !! ADDED by SS as part of RRTMGP data optimization
+                  !$acc data copyin(atm_optics_sw, toa_flux, &
+                  !$acc aer_sw, cloud_sw,  &
+                  !$acc aer_sw%tau, aer_sw%ssa, aer_sw%g, &
+                  !$acc atm_optics_sw%tau,  &
+                  !$acc atm_optics_sw%ssa, atm_optics_sw%g,   &
+                  !$acc cloud_sw%tau, cloud_sw%ssa, cloud_sw%g,  &
+                  !$acc alb_dir, alb_dif,coszrs_day) &
+                  !$acc copy(fswc, fswc%flux_net,fswc%flux_up,fswc%flux_dn, &
+                  !$acc      fsw,   fsw%flux_net, fsw%flux_up, fsw%flux_dn)
+                  call t_stopf('radiation_tend:DTO')
+
+                  call t_startf('radiation_tend:ACCR')
                   ! Increment the gas optics (in atm_optics_sw) by the aerosol optics in aer_sw.
                   errmsg = aer_sw%increment(atm_optics_sw)
                   call stop_on_err(errmsg, sub, 'aer_sw%increment')
@@ -1193,6 +1234,11 @@ subroutine radiation_tend( &
                      atm_optics_sw, top_at_1, coszrs_day, toa_flux, &
                      alb_dir, alb_dif, fsw)
                   call stop_on_err(errmsg, sub, 'all-sky rte_sw')
+                  call t_stopf('radiation_tend:ACCR')
+
+                  call t_startf('radiation_tend:DTO')
+                  !$acc end data
+                  call t_stopf('radiation_tend:DTO')
 
                end if
 
@@ -1223,10 +1269,12 @@ subroutine radiation_tend( &
          call stop_on_err(errmsg, sub, 'sources_lw%alloc')
 
          ! Set cloud optical properties in cloud_lw object.
+         call t_startf('radiation_tend:NAR:cloud_lw')
          call rrtmgp_set_cloud_lw( &
             state, pbuf, ncol, nlay, nlaycam, &
             cld, cldfsnow, cldfgrau, cldfprime, graupel_in_rad, &
             kdist_lw, cloud_lw, cld_lw_abs_cloudsim, snow_lw_abs_cloudsim, grau_lw_abs_cloudsim)
+         call t_stopf('radiation_tend:NAR:cloud_lw')
 
          ! Initialize object for gas concentrations
          errmsg = gas_concs_lw%init(gaslist_lc)
@@ -1246,17 +1294,54 @@ subroutine radiation_tend( &
             if (active_calls(icall)) then
 
                ! Set gas volume mixing ratios for this call in gas_concs_lw.
+               call t_startf('radiation_tend:NAR:gases_lw')
                call rrtmgp_set_gases_lw(icall, state, pbuf, nlay, gas_concs_lw)
+               call t_stopf('radiation_tend:NAR:gases_lw')
 
+               call t_startf('radiation_tend:DTO')
                ! Compute the gas optics and Planck sources.
+               !$acc data copyin(kdist_lw,pmid_rad,pint_rad,t_rad,t_sfc, &
+               !$acc gas_concs_lw) &
+               !$acc copy(atm_optics_lw, &
+               !$acc atm_optics_lw%tau, sources_lw, &
+               !$acc sources_lw%lay_source, sources_lw%sfc_source,  &
+               !$acc sources_lw%lev_source_inc, sources_lw%lev_source_dec, &
+               !$acc sources_lw%sfc_source_jac)
+               call t_stopf('radiation_tend:DTO')
+
+               call t_startf('radiation_tend:ACCR')
                errmsg = kdist_lw%gas_optics( &
                   pmid_rad, pint_rad, t_rad, t_sfc, gas_concs_lw, &
                   atm_optics_lw, sources_lw)
                call stop_on_err(errmsg, sub, 'kdist_lw%gas_optics')
+               call t_stopf('radiation_tend:ACCR')
+
+               call t_startf('radiation_tend:DTO')
+               !$acc end data
+               call t_stopf('radiation_tend:DTO')
 
                ! Set LW aerosol optical properties in the aer_lw object.
+               call t_startf('radiation_tend:NAR:aer_lw')
                call rrtmgp_set_aer_lw(icall, state, pbuf, aer_lw)
+               call t_stopf('radiation_tend:NAR:aer_lw')
                
+               call t_startf('radiation_tend:DTO')
+               !! Added by SS as part of RRTMGP data optimization
+               !$acc data copyin(atm_optics_lw, aer_lw, cloud_lw,  &
+               !$acc aer_lw%tau, &
+               !$acc atm_optics_lw%tau, &
+               !$acc cloud_lw%tau, &
+               !$acc sources_lw, &
+               !$acc sources_lw%lay_source, sources_lw%sfc_source,  &
+               !$acc sources_lw%lev_source_inc, sources_lw%lev_source_dec,  &
+               !$acc sources_lw%sfc_source_Jac, &
+               !$acc emis_sfc)  &
+               !$acc copy(flwc, flwc%flux_net,flwc%flux_up,flwc%flux_dn, &
+               !$acc      flw,   flw%flux_net, flw%flux_up, flw%flux_dn)
+               call t_stopf('radiation_tend:DTO')
+              call t_startf('radiation_tend:ACCR')
+
+
                ! Increment the gas optics by the aerosol optics.
                errmsg = aer_lw%increment(atm_optics_lw)
                call stop_on_err(errmsg, sub, 'aer_lw%increment')
@@ -1272,6 +1357,11 @@ subroutine radiation_tend( &
                ! Compute all-sky LW fluxes
                errmsg = rte_lw(atm_optics_lw, top_at_1, sources_lw, emis_sfc, flw)
                call stop_on_err(errmsg, sub, 'all-sky rte_lw')
+               call t_stopf('radiation_tend:ACCR')
+
+               call t_startf('radiation_tend:DTO')
+               !$acc end data
+               call t_stopf('radiation_tend:DTO')
 
                ! Transform RRTMGP outputs to CAM outputs and compute heating rates.
                call set_lw_diags()
