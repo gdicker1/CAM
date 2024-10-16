@@ -2222,7 +2222,7 @@ contains
        type (MPAS_Time_Type) :: currTime
        type (MPAS_Time_type) :: runUntilTime
        character(len=StrKIND) :: timeStamp
-       type (mpas_pool_type), pointer :: state, diag, mesh
+       type (mpas_pool_type), pointer :: state, diag, mesh, tend_physics
 
        integer, pointer :: index_qv
        integer, pointer :: nCellsSolve
@@ -2238,6 +2238,11 @@ contains
        call mpas_pool_get_subpool(domain_ptr % blocklist % structs, 'state', state)
        call mpas_pool_get_subpool(domain_ptr % blocklist % structs, 'diag', diag)
        call mpas_pool_get_subpool(domain_ptr % blocklist % structs, 'mesh', mesh)
+       call mpas_pool_get_subpool(domain_ptr % blocklist % structs, 'tend_physics', tend_physics)
+
+#ifdef MPAS_OPENACC
+       call cam_mpas_gpudata_host_to_device(state, diag, tend_physics)
+#endif !MPAS_OPENACC
 
        ! During integration, time level 1 stores the model state at the beginning of the
        !   time step, and time level 2 stores the state advanced dt in time by timestep(...)
@@ -2263,6 +2268,10 @@ contains
           currTime = mpas_get_clock_time(clock, MPAS_NOW, ierr)
        end do
 
+#ifdef MPAS_OPENACC
+       call cam_mpas_gpudata_device_to_host(state, diag, tend_physics)
+#endif !MPAS_OPENACC
+
        !
        ! Compute diagnostic fields from the final prognostic state
        !
@@ -2279,6 +2288,98 @@ contains
        theta(:,1:nCellsSolve) = theta_m(:,1:nCellsSolve) / (1.0_RKIND + Rv_over_Rd * scalars(index_qv,:,1:nCellsSolve))
 
     end subroutine cam_mpas_run
+
+
+    !-----------------------------------------------------------------------
+    !  routine cam_mpas_gpudata_host_to_device
+    !
+    !> \brief  Transfer data from CPU to GPU before atm_do_timestep
+    !> \author G. Dylan Dickerson
+    !> \date   15 October 2024
+    !> \details
+    !>  SOME DETAIL HERE
+    !
+    !-----------------------------------------------------------------------
+    subroutine cam_mpas_gpudata_host_to_device(state, diag, tend_physics)
+
+       use mpas_derived_types, only : mpas_pool_type
+       use mpas_kind_types, only : RKIND
+       use mpas_pool_routines, only : mpas_pool_get_array_gpu
+
+       type (mpas_pool_type), pointer :: state, diag, tend_physics
+       real(kind=RKIND), dimension(:,:), pointer :: u, w, theta_m, rho_zz
+       real(kind=RKIND), dimension(:,:,:), pointer :: scalars
+       real(kind=RKIND), dimension(:,:), pointer :: theta, exner, rho, uReconstructZonal, uReconstructMeridional
+       real(kind=RKIND), dimension(:,:), pointer :: tend_ru_physics, tend_rho_physics, tend_rtheta_physics
+
+       ! state pool arrays, modify the "current" state in timeLevel=1
+       call mpas_pool_get_array_gpu(state, 'u', u, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'w', w, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'theta_m', theta_m, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'rho_zz', rho_zz, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'scalars', scalars, timeLevel=1)
+       !$acc update device(u,w,theta_m,rho_zz,scalars)
+
+       ! diag pool arrays
+       call mpas_pool_get_array_gpu(diag, 'theta', theta)
+       call mpas_pool_get_array_gpu(diag, 'exner', exner)
+       call mpas_pool_get_array_gpu(diag, 'rho', rho)
+       call mpas_pool_get_array_gpu(diag, 'uReconstructZonal', uReconstructZonal)
+       call mpas_pool_get_array_gpu(diag, 'uReconstructMeridional', uReconstructMeridional)
+       !$acc update device(theta,exner,rho,uReconstructZonal,uReconstructMeridional)
+
+       ! tend pool arrays
+       call mpas_pool_get_array_gpu(tend_physics, 'tend_ru_physics', tend_ru_physics)
+       call mpas_pool_get_array_gpu(tend_physics, 'tend_rtheta_physics', tend_rtheta_physics)
+       call mpas_pool_get_array_gpu(tend_physics, 'tend_rho_physics', tend_rho_physics)
+       !$acc update device(tend_ru_physics,tend_rtheta_physics,tend_rho_physics)
+
+    end subroutine cam_mpas_gpudata_host_to_device
+
+
+    !-----------------------------------------------------------------------
+    !  routine cam_mpas_gpudata_device_to_host
+    !
+    !> \brief  Transfer data from GPU to CPU after atm_do_timestep
+    !> \author G. Dylan Dickerson
+    !> \date   15 October 2024
+    !> \details
+    !>  SOME DETAIL HERE
+    !
+    !-----------------------------------------------------------------------
+    subroutine cam_mpas_gpudata_device_to_host(state, diag, tend_physics)
+
+       use mpas_derived_types, only : mpas_pool_type
+       use mpas_kind_types, only : RKIND
+       use mpas_pool_routines, only : mpas_pool_get_array_gpu
+
+       type (mpas_pool_type), pointer :: state, diag, tend_physics
+       real(kind=RKIND), dimension(:,:), pointer :: u, w, theta_m, rho_zz
+       real(kind=RKIND), dimension(:,:,:), pointer :: scalars
+       real(kind=RKIND), dimension(:,:), pointer :: theta, exner, rho, uReconstructZonal, uReconstructMeridional, &
+                                                    v, vorticity, divergence
+
+       ! state pool arrays, modify the "current" state in timeLevel=1
+       call mpas_pool_get_array_gpu(state, 'u', u, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'w', w, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'theta_m', theta_m, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'rho_zz', rho_zz, timeLevel=1)
+       call mpas_pool_get_array_gpu(state, 'scalars', scalars, timeLevel=1)
+       !$acc update host(u,w,theta_m,rho_zz,scalars)
+
+       ! diag pool arrays
+       call mpas_pool_get_array_gpu(diag, 'theta', theta)
+       call mpas_pool_get_array_gpu(diag, 'exner', exner)
+       call mpas_pool_get_array_gpu(diag, 'rho', rho)
+       call mpas_pool_get_array_gpu(diag, 'uReconstructZonal', uReconstructZonal)
+       call mpas_pool_get_array_gpu(diag, 'uReconstructMeridional', uReconstructMeridional)
+       call mpas_pool_get_array_gpu(diag, 'v', v)
+       call mpas_pool_get_array_gpu(diag, 'vorticity', vorticity)
+       call mpas_pool_get_array_gpu(diag, 'divergence', divergence)
+       !$acc update host(theta,exner,rho,uReconstructZonal,uReconstructMeridional, &
+       !$acc             v,vorticity,divergence)
+
+    end subroutine cam_mpas_gpudata_device_to_host
 
 
     !-----------------------------------------------------------------------
