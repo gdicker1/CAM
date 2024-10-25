@@ -80,7 +80,7 @@
 	url = https://github.com/gdicker1/MPAS-Model.git
         fxrequired = AlwaysRequired
         fxsparse = ../.mpas_sparse_checkout
-        fxtag = fix/ansdiffs_cpu
+        fxtag = fix/ew_ansdiffs_dyntend
 	fxDONOTUSEurl = https://github.com/MPAS-Dev/MPAS-Model.git
 
 [submodule "cosp2"]
